@@ -14,11 +14,11 @@ A web app for running handwriting and phonics classes: students and parents, bat
 - Sign-in for the teacher (owner account created from `.env`)
 - Database tables for the whole MVP: students, parents, courses/levels/skills, batches and schedules, enrollments, class sessions and attendance, skill progress, assessments, handwriting samples, fee plans, invoices and payments
 - Starter curriculum (Print, Cursive, Phonics) and example fee plans
-- Screens: **Today** dashboard, **Students** (list, search, add, edit), **Batches** (list), **Fees due** (with WhatsApp reminder links)
+- Screens: **Today** dashboard, **Students** (list, search, add, edit), **Batches** (add, edit, weekly schedule, assign students), **Attendance** (tap a class on Today, everyone starts present, mark absent/late/excused, add a class note), **Fees due** (with WhatsApp reminder links)
 - Responsive layout: bottom tab bar on phones and iPad portrait, sidebar on iPad landscape and desktop
 - Installable PWA with an offline page
 
-Next up, in order: batch and schedule editing, attendance, progress and samples, then invoices and payments.
+Next up, in order: progress checklists and handwriting samples, then invoices and payments.
 
 ## Run it locally
 

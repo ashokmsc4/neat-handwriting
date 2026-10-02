@@ -17,7 +17,11 @@ class Dashboard extends Component
 
         $todaysBatches = Batch::active()
             ->whereHas('schedules', fn ($q) => $q->where('weekday', $today->dayOfWeek))
-            ->with(['course', 'schedules' => fn ($q) => $q->where('weekday', $today->dayOfWeek)])
+            ->with([
+                'course',
+                'schedules' => fn ($q) => $q->where('weekday', $today->dayOfWeek),
+                'sessions' => fn ($q) => $q->whereDate('date', $today)->where('status', 'held'),
+            ])
             ->withCount('students')
             ->get()
             ->sortBy(fn ($batch) => $batch->schedules->first()->start_time);

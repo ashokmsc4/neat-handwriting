@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Attendance;
 use App\Livewire\Auth\Login;
 use App\Livewire\Batches;
 use App\Livewire\Dashboard;
@@ -21,6 +22,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/students/{student}/edit', Students\Form::class)->name('students.edit');
 
     Route::get('/batches', Batches\Index::class)->name('batches.index');
+    Route::get('/batches/new', Batches\Form::class)->name('batches.create');
+    Route::get('/batches/{batch}/edit', Batches\Form::class)->name('batches.edit');
+
+    Route::get('/attendance/{batch}/{date?}', Attendance\Take::class)
+        ->where('date', '\d{4}-\d{2}-\d{2}')
+        ->name('attendance.take');
     Route::get('/fees', Fees\Index::class)->name('fees.index');
 
     Route::post('/logout', function (Request $request) {

@@ -51,6 +51,7 @@ class Batch extends Model
     public function students(): BelongsToMany
     {
         return $this->belongsToMany(Student::class, 'enrollments')
+            ->wherePivot('status', 'active')
             ->withPivot(['status', 'start_date', 'end_date', 'fee_plan_id'])
             ->withTimestamps();
     }
