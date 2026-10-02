@@ -12,9 +12,9 @@ class Index extends Component
     public function render()
     {
         return view('livewire.batches.index', [
-            'batches' => Batch::active()
-                ->with(['course', 'level', 'schedules'])
+            'batches' => Batch::with(['course', 'level', 'schedules'])
                 ->withCount('students')
+                ->orderByDesc('active')
                 ->orderBy('name')
                 ->get(),
         ]);

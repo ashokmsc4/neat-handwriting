@@ -19,6 +19,9 @@
     --color-success: #047857;
     --color-success-soft: #ecfdf5;
     --color-danger: #b91c1c;
+    --color-danger-soft: #fef2f2;
+    --color-warning: #b45309;
+    --color-warning-soft: #fffbeb;
 }
 
 @layer components {
@@ -42,6 +45,18 @@
     .badge { @apply rounded-full bg-brand-soft px-2.5 py-1 text-xs font-medium text-brand; }
     .chip { @apply rounded-lg bg-surface-2 px-2 py-1 text-xs text-ink; }
     .avatar { @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-soft font-semibold text-brand; }
+
+    /* Pill toggles built from radio inputs, e.g. In person / Online, P / A / L */
+    .segmented { @apply flex gap-1 rounded-xl bg-surface-2 p-1; }
+    .segmented label { @apply flex-1; }
+    .segmented input { @apply sr-only; }
+    .segmented label > span { @apply flex min-h-10 cursor-pointer items-center justify-center rounded-lg px-3 text-sm font-medium text-muted select-none; }
+    .segmented input:checked + span { @apply bg-surface text-ink shadow-sm; }
+    .segmented input:focus-visible + span { @apply ring-2 ring-brand/40; }
+    .attendance label > span { @apply min-h-11 min-w-11 px-2; }
+    .attendance input:checked + span[data-status='present'] { @apply bg-success-soft text-success; }
+    .attendance input:checked + span[data-status='absent'] { @apply bg-danger-soft text-danger; }
+    .attendance input:checked + span[data-status='late'] { @apply bg-warning-soft text-warning; }
 
     .nav-link { @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted hover:bg-surface-2 hover:text-ink; }
     .nav-link-active { @apply bg-brand-soft text-brand hover:bg-brand-soft hover:text-brand; }
