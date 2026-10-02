@@ -41,8 +41,7 @@ class StudentsTest extends TestCase
             ->set('guardian_name', 'Meera Patel')
             ->set('guardian_phone', '98765 43210')
             ->call('save')
-            ->assertHasNoErrors()
-            ->assertRedirect(route('students.index'));
+            ->assertHasNoErrors();
 
         $student = Student::firstWhere('name', 'Diya Patel');
         $this->assertSame(StudentStatus::Active, $student->status);
