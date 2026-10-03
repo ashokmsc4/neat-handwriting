@@ -127,6 +127,68 @@
                         </div>
                     </section>
                 @endforeach
+
+                <section class="card space-y-4 p-4 lg:p-6">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <h2 class="section-title mb-0">Monthly check</h2>
+                        @if (! $assessingLevelId)
+                            <div class="flex flex-wrap gap-2">
+                                @foreach ($course->levels as $level)
+                                    <button type="button" wire:click="startAssessment({{ $level->id }})" class="btn-secondary">Check “{{ $level->name }}”</button>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+
+                    @if ($assessingLevelId && ($assessLevel = $course->levels->firstWhere('id', $assessingLevelId)))
+                        <form wire:submit="saveAssessment" class="space-y-3">
+                            <p class="text-sm text-muted">Score each skill for {{ $assessLevel->name }}: 1 = needs lots of help, 5 = excellent.</p>
+                            @foreach ($assessLevel->skills as $skill)
+                                <div wire:key="score-{{ $skill->id }}" class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                                    <span class="text-ink">{{ $skill->name }}</span>
+                                    <div class="segmented sm:w-64" role="radiogroup" aria-label="Score for {{ $skill->name }}">
+                                        @for ($n = 1; $n <= 5; $n++)
+                                            <label><input type="radio" wire:model="scores.{{ $skill->id }}" value="{{ $n }}"><span>{{ $n }}</span></label>
+                                        @endfor
+                                    </div>
+                                </div>
+                            @endforeach
+                            <div class="grid gap-3 sm:grid-cols-[1fr_12rem]">
+                                <input wire:model="assessmentNote" type="text" placeholder="Overall note (optional)" class="input" aria-label="Overall note">
+                                <input wire:model="assessmentDate" type="date" class="input" aria-label="Date">
+                            </div>
+                            @error('assessmentDate') <p class="error">{{ $message }}</p> @enderror
+                            <div class="flex gap-2 sm:justify-end">
+                                <button type="button" wire:click="$set('assessingLevelId', null)" class="btn-secondary flex-1 sm:flex-none">Cancel</button>
+                                <button type="submit" class="btn-primary flex-1 sm:flex-none">Save check</button>
+                            </div>
+                        </form>
+                    @endif
+
+                    @forelse ($assessments as $a)
+                        @php($avg = round($a->scores->avg('score'), 1))
+                        <details wire:key="as-{{ $a->id }}" class="rounded-xl border border-line">
+                            <summary class="flex cursor-pointer items-center justify-between gap-3 p-3">
+                                <span>
+                                    <span class="font-medium text-ink">{{ $a->date->format('j M Y') }}</span>
+                                    <span class="text-sm text-muted">· {{ $a->level?->name }}</span>
+                                </span>
+                                <span class="rounded-full bg-brand-soft px-2.5 py-0.5 text-sm font-semibold text-brand">{{ $avg }}/5</span>
+                            </summary>
+                            <div class="space-y-1 border-t border-line p-3 text-sm">
+                                @foreach ($a->scores as $score)
+                                    <div class="flex justify-between gap-2"><span class="text-ink">{{ $score->skill?->name }}</span><span class="text-muted">{{ str_repeat('●', $score->score) }}{{ str_repeat('○', 5 - $score->score) }}</span></div>
+                                @endforeach
+                                @if ($a->overall_note) <p class="pt-2 text-muted">{{ $a->overall_note }}</p> @endif
+                                <button type="button" wire:click="deleteAssessment({{ $a->id }})" wire:confirm="Delete this check?" class="pt-2 text-xs text-muted hover:text-danger">Delete</button>
+                            </div>
+                        </details>
+                    @empty
+                        @unless ($assessingLevelId)
+                            <p class="text-sm text-muted">No checks yet. Do one each month to see improvement over time.</p>
+                        @endunless
+                    @endforelse
+                </section>
             @endif
         </div>
     @endif

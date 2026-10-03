@@ -1,7 +1,7 @@
 <div class="w-full max-w-sm">
     <div class="mb-8 text-center">
         <img src="/icons/icon-192.png" alt="" class="mx-auto mb-4 h-16 w-16 rounded-2xl shadow-sm">
-        <h1 class="text-2xl font-semibold text-ink">{{ config('school.name') }}</h1>
+        <h1 class="text-2xl font-semibold text-ink">{{ \App\Models\Setting::get('school_name') }}</h1>
         <p class="mt-1 text-sm text-muted">Sign in to manage your classes</p>
     </div>
 

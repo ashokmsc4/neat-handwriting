@@ -9,17 +9,17 @@
             <span class="stat-label">Active students</span>
             <span class="stat-value">{{ $activeStudents }}</span>
         </a>
-        <a href="{{ route('batches.index') }}" wire:navigate class="card stat">
-            <span class="stat-label">Batches</span>
-            <span class="stat-value">{{ $activeBatches }}</span>
+        <a href="{{ route('reports.index') }}" wire:navigate class="card stat">
+            <span class="stat-label">Attendance in {{ $today->format('M') }}</span>
+            <span class="stat-value">{{ $attendanceRate !== null ? $attendanceRate.'%' : '—' }}</span>
         </a>
         <a href="{{ route('fees.index') }}" wire:navigate class="card stat">
             <span class="stat-label">Fees outstanding</span>
-            <span class="stat-value">{{ config('school.currency') }}{{ number_format($feesDue) }}</span>
+            <span @class(['stat-value', 'text-danger' => $feesDue > 0])>{{ $currency }}{{ number_format($feesDue) }}</span>
         </a>
-        <a href="{{ route('fees.index') }}" wire:navigate class="card stat">
-            <span class="stat-label">Unpaid invoices</span>
-            <span class="stat-value">{{ $feesDueCount }}</span>
+        <a href="{{ route('fees.index', ['tab' => 'paid']) }}" wire:navigate class="card stat">
+            <span class="stat-label">Collected in {{ $today->format('M') }}</span>
+            <span class="stat-value text-success">{{ $currency }}{{ number_format($collected) }}</span>
         </a>
     </section>
 
@@ -49,4 +49,21 @@
             </div>
         @endforelse
     </section>
+
+    @if ($birthdays->isNotEmpty())
+        <section>
+            <h2 class="section-title">Birthdays this week 🎂</h2>
+            <div class="card divide-y divide-line">
+                @foreach ($birthdays as $student)
+                    <a href="{{ route('students.show', $student) }}" wire:navigate class="flex items-center justify-between gap-3 p-4 hover:bg-surface-2">
+                        <span class="font-medium text-ink">{{ $student->name }}</span>
+                        <span class="text-sm text-muted">
+                            {{ $student->dob->format('m-d') === $today->format('m-d') ? 'Today!' : $student->dob->format('j M') }}
+                            · turns {{ $student->dob->copy()->year($today->year)->lt($today->copy()->startOfDay()) ? $today->year + 1 - $student->dob->year : $today->year - $student->dob->year }}
+                        </span>
+                    </a>
+                @endforeach
+            </div>
+        </section>
+    @endif
 </div>

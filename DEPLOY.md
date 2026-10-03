@@ -72,7 +72,18 @@ hPanel → Advanced → Cron Jobs → add, every minute:
 cd ~/neat-handwriting && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-This creates each month's fee invoices automatically (checked every morning at 6:00). If the cron isn't set up yet, use the **Bill <month>** button on the Fees page instead.
+This creates each month's fee invoices automatically (checked every morning at 6:00) and takes a backup every night at 2:00. If the cron isn't set up yet, use the **Bill <month>** button on the Fees page and **Back up now** in More → Backups instead.
+
+### Backups
+
+Each backup is a zip in `storage/app/private/backups` holding every table as JSON plus the handwriting photos; the newest 14 are kept. Download one now and then from More → Backups and keep it somewhere safe (Google Drive, your laptop). Hostinger's own daily backups are a second safety net.
+
+To restore a backup (this replaces all current data):
+
+```bash
+cd ~/neat-handwriting
+php artisan backup:restore storage/app/private/backups/neat-handwriting-YYYY-MM-DD-HHMMSS.zip
+```
 
 ## Updating after a change
 

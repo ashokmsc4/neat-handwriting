@@ -40,7 +40,7 @@
 
     .btn-primary { @apply inline-flex min-h-11 items-center justify-center rounded-xl bg-brand px-4 font-medium text-white transition hover:bg-brand/90 disabled:opacity-60; }
     .btn-secondary { @apply inline-flex min-h-11 items-center justify-center rounded-xl border border-line bg-surface px-4 text-sm font-medium text-ink transition hover:border-brand; }
-    .btn-ghost { @apply inline-flex h-11 w-11 items-center justify-center rounded-xl text-xl text-muted hover:bg-surface; }
+    .btn-ghost { @apply inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xl text-muted hover:bg-surface disabled:opacity-30; }
 
     .badge { @apply rounded-full bg-brand-soft px-2.5 py-1 text-xs font-medium text-brand; }
     .chip { @apply rounded-lg bg-surface-2 px-2 py-1 text-xs text-ink; }
@@ -66,3 +66,5 @@
     /* Save button stays reachable above the tab bar on phones */
     .sticky-actions { @apply fixed inset-x-0 bottom-14 z-10 border-t border-line bg-surface/95 p-3 backdrop-blur sm:flex sm:justify-end lg:static lg:border-0 lg:bg-transparent lg:p-0; }
 }
+
+[x-cloak] { display: none !important; }

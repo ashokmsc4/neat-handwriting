@@ -15,10 +15,15 @@ A web app for running handwriting and phonics classes: students and parents, bat
 - Database tables for the whole MVP: students, parents, courses/levels/skills, batches and schedules, enrollments, class sessions and attendance, skill progress, assessments, handwriting samples, fee plans, invoices and payments
 - Starter curriculum (Print, Cursive, Phonics) and example fee plans
 - Screens: **Today** dashboard, **Students** (list, search, add, edit, and a profile with attendance history, a tap-to-update skill checklist and handwriting photos with a before/after view), **Batches** (add, edit, weekly schedule, assign students), **Attendance** (tap a class on Today, everyone starts present, mark absent/late/excused, add a class note), **Fees** (monthly invoices created automatically from each batch's fee plan, extra charges with discounts, mark paid by cash/UPI/bank, part payments, printable receipts, WhatsApp reminders and receipts)
+- **Progress**: monthly check with a 1 to 5 score per skill and a history with averages
+- **Dashboard**: active students, attendance this month, fees outstanding and collected, birthdays this week
+- **Reports** (More → Reports): monthly attendance, collections chart, attendance by batch, CSV downloads of students, attendance, payments and outstanding fees
+- **Settings** (More): class name/phone/address (shown on receipts), fee due day, receipt prefix, courses/levels/skills editor, fee plans, account and password
+- **Backups**: nightly zip of all data and photos (last 14 kept), a "Back up now" button and downloads in More → Backups
 - Responsive layout: bottom tab bar on phones and iPad portrait, sidebar on iPad landscape and desktop
 - Installable PWA with an offline page
 
-Next up: settings (curriculum, fee plans, class details, password), monthly assessments, reports/exports and backups.
+Ideas for later (phase 2): parent portal, report card PDFs, enquiries and trial classes, class pack tracking, offline attendance.
 
 Handwriting photos are shrunk in the browser before upload, stored outside the public folder in `storage/app/private/samples`, and only served to signed-in users.
 
