@@ -72,7 +72,7 @@ hPanel → Advanced → Cron Jobs → add, every minute:
 cd ~/neat-handwriting && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-This drives future automatic jobs (monthly invoices, backups).
+This creates each month's fee invoices automatically (checked every morning at 6:00). If the cron isn't set up yet, use the **Bill <month>** button on the Fees page instead.
 
 ## Updating after a change
 

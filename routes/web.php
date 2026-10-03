@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\SampleImageController;
 use App\Livewire\Attendance;
 use App\Livewire\Auth\Login;
@@ -32,6 +33,7 @@ Route::middleware('auth')->group(function () {
         ->where('date', '\d{4}-\d{2}-\d{2}')
         ->name('attendance.take');
     Route::get('/fees', Fees\Index::class)->name('fees.index');
+    Route::get('/payments/{payment}/receipt', ReceiptController::class)->name('payments.receipt');
 
     Route::post('/logout', function (Request $request) {
         Auth::logout();

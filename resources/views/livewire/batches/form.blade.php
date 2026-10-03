@@ -39,6 +39,18 @@
             </div>
 
             <div>
+                <label for="fee_plan_id" class="label">Fee plan</label>
+                <select wire:model="fee_plan_id" id="fee_plan_id" class="input">
+                    <option value="">No fee plan</option>
+                    @foreach ($feePlans as $plan)
+                        <option value="{{ $plan->id }}">{{ $plan->name }} · {{ config('school.currency') }}{{ number_format($plan->amount) }} {{ strtolower($plan->typeLabel()) }}</option>
+                    @endforeach
+                </select>
+                <p class="mt-1 text-xs text-muted">Used for students added to this batch. Monthly plans are billed automatically.</p>
+                @error('fee_plan_id') <p class="error">{{ $message }}</p> @enderror
+            </div>
+
+            <div>
                 <span class="label">Mode</span>
                 <div class="segmented">
                     <label><input type="radio" wire:model.live="mode" value="offline"><span>In person</span></label>

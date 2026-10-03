@@ -5,6 +5,7 @@ namespace App\Livewire\Batches;
 use App\Models\Batch;
 use App\Models\Course;
 use App\Models\Enrollment;
+use App\Models\FeePlan;
 use App\Models\Student;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +24,8 @@ class Form extends Component
     public ?int $course_id = null;
 
     public ?int $level_id = null;
+
+    public ?int $fee_plan_id = null;
 
     public string $mode = 'offline';
 
@@ -57,6 +60,7 @@ class Form extends Component
             'name' => $batch->name,
             'course_id' => $batch->course_id,
             'level_id' => $batch->level_id,
+            'fee_plan_id' => $batch->fee_plan_id,
             'mode' => $batch->mode ?? 'offline',
             'meeting_link' => (string) $batch->meeting_link,
             'capacity' => $batch->capacity,
@@ -117,6 +121,7 @@ class Form extends Component
             'name' => 'required|string|max:255',
             'course_id' => 'required|exists:courses,id',
             'level_id' => ['nullable', Rule::exists('levels', 'id')->where('course_id', $this->course_id)],
+            'fee_plan_id' => 'nullable|exists:fee_plans,id',
             'mode' => 'required|in:offline,online',
             'meeting_link' => 'nullable|url|max:255',
             'capacity' => 'nullable|integer|min:1|max:500',
@@ -145,6 +150,7 @@ class Form extends Component
                 'name' => $data['name'],
                 'course_id' => $data['course_id'],
                 'level_id' => $data['level_id'] ?: null,
+                'fee_plan_id' => $data['fee_plan_id'] ?: null,
                 'mode' => $data['mode'],
                 'meeting_link' => $data['meeting_link'] ?: null,
                 'capacity' => $data['capacity'] ?: null,
@@ -184,10 +190,16 @@ class Form extends Component
             ->whereNotIn('student_id', $studentIds)
             ->update(['status' => 'ended', 'end_date' => $today]);
 
+        if ($this->batch->fee_plan_id) {
+            $this->batch->enrollments()->where('status', 'active')->whereNull('fee_plan_id')
+                ->update(['fee_plan_id' => $this->batch->fee_plan_id]);
+        }
+
         foreach (array_diff($studentIds, $current) as $studentId) {
             Enrollment::create([
                 'student_id' => $studentId,
                 'batch_id' => $this->batch->id,
+                'fee_plan_id' => $this->batch->fee_plan_id,
                 'start_date' => $today,
                 'status' => 'active',
             ]);
@@ -199,6 +211,7 @@ class Form extends Component
         return view('livewire.batches.form', [
             'weekdays' => ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
             'levels' => $this->courses->firstWhere('id', $this->course_id)?->levels ?? collect(),
+            'feePlans' => FeePlan::where('active', true)->orWhere('id', $this->fee_plan_id)->orderBy('name')->get(),
         ]);
     }
 }

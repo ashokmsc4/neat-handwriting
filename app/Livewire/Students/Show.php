@@ -3,8 +3,12 @@
 namespace App\Livewire\Students;
 
 use App\Enums\AttendanceStatus;
+use App\Enums\InvoiceStatus;
 use App\Enums\SkillStatus;
+use App\Livewire\Concerns\RecordsPayments;
 use App\Models\Course;
+use App\Models\FeePlan;
+use App\Models\Setting;
 use App\Models\Skill;
 use App\Models\Student;
 use App\Models\StudentSkill;
@@ -18,7 +22,7 @@ use Livewire\WithFileUploads;
 
 class Show extends Component
 {
-    use WithFileUploads;
+    use RecordsPayments, WithFileUploads;
 
     public Student $student;
 
@@ -33,6 +37,18 @@ class Show extends Component
     public string $caption = '';
 
     public ?string $photoDate = null;
+
+    public bool $addingCharge = false;
+
+    public ?int $chargePlanId = null;
+
+    public string $chargeLabel = '';
+
+    public string $chargeAmount = '';
+
+    public string $chargeDiscount = '';
+
+    public ?string $chargeDue = null;
 
     public function mount(Student $student): void
     {
@@ -90,6 +106,52 @@ class Show extends Component
         $this->student->samples()->findOrFail($sampleId)->delete();
     }
 
+    public function setEnrollmentPlan(int $enrollmentId, ?int $planId): void
+    {
+        $this->student->enrollments()->findOrFail($enrollmentId)
+            ->update(['fee_plan_id' => $planId ?: null]);
+    }
+
+    public function updatedChargePlanId(): void
+    {
+        if ($plan = FeePlan::find($this->chargePlanId)) {
+            $this->chargeLabel = $plan->type === 'monthly' ? now()->format('M Y') : $plan->name;
+            $this->chargeAmount = (string) (float) $plan->amount;
+        }
+    }
+
+    public function startCharge(): void
+    {
+        $this->resetValidation();
+        $this->addingCharge = true;
+        $this->chargePlanId = null;
+        $this->chargeLabel = '';
+        $this->chargeAmount = '';
+        $this->chargeDiscount = '';
+        $dueDay = min((int) Setting::get('fee_due_day'), now()->daysInMonth);
+        $this->chargeDue = now()->day >= $dueDay ? now()->toDateString() : now()->day($dueDay)->toDateString();
+    }
+
+    public function saveCharge(): void
+    {
+        $data = $this->validate([
+            'chargeLabel' => 'required|string|max:50',
+            'chargeAmount' => 'required|numeric|min:1|max:1000000',
+            'chargeDiscount' => 'nullable|numeric|min:0|lte:chargeAmount',
+            'chargeDue' => 'required|date',
+        ]);
+
+        $this->student->invoices()->create([
+            'period_label' => $data['chargeLabel'],
+            'amount' => $data['chargeAmount'],
+            'discount' => $data['chargeDiscount'] ?: 0,
+            'due_date' => $data['chargeDue'],
+            'status' => InvoiceStatus::Due,
+        ]);
+
+        $this->addingCharge = false;
+    }
+
     #[Computed]
     public function skillStatuses()
     {
@@ -116,6 +178,9 @@ class Show extends Component
             'courses' => Course::orderBy('name')->get(['id', 'name']),
             'course' => $this->tab === 'progress' && $this->courseId ? Course::with('levels.skills')->find($this->courseId) : null,
             'samples' => $this->tab === 'samples' ? $this->student->samples()->orderByDesc('date')->orderByDesc('id')->get() : collect(),
+            'enrollments' => $this->tab === 'fees' ? $this->student->enrollments()->where('status', 'active')->with('batch')->get() : collect(),
+            'invoices' => $this->tab === 'fees' ? $this->student->invoices()->with('payments')->orderByDesc('due_date')->orderByDesc('id')->get() : collect(),
+            'feePlans' => $this->tab === 'fees' ? FeePlan::orderBy('name')->get() : collect(),
         ])->title($this->student->name);
     }
 }
