@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Batch extends Model
 {
     protected $fillable = [
-        'course_id', 'level_id', 'name', 'mode', 'meeting_link', 'capacity', 'start_date', 'end_date', 'active',
+        'course_id', 'level_id', 'fee_plan_id', 'name', 'mode', 'meeting_link', 'capacity', 'start_date', 'end_date', 'active',
     ];
 
     protected function casts(): array
@@ -36,6 +36,11 @@ class Batch extends Model
     public function level(): BelongsTo
     {
         return $this->belongsTo(Level::class);
+    }
+
+    public function feePlan(): BelongsTo
+    {
+        return $this->belongsTo(FeePlan::class);
     }
 
     public function schedules(): HasMany

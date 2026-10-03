@@ -1,5 +1,6 @@
 @php
-    $tabs = ['overview' => 'Overview', 'progress' => 'Progress', 'samples' => 'Photos'];
+    $tabs = ['overview' => 'Overview', 'progress' => 'Progress', 'samples' => 'Photos', 'fees' => 'Fees'];
+    $currency = config('school.currency');
     $chip = [
         'not_started' => 'bg-surface-2 text-muted',
         'practising' => 'bg-warning-soft text-warning',
@@ -202,4 +203,123 @@
             </section>
         </div>
     @endif
+    @if ($tab === 'fees')
+        <div class="space-y-4">
+            @php($owed = $invoices->sum(fn ($i) => $i->balance()))
+            <section class="card flex items-center justify-between gap-3 p-4 lg:p-6">
+                <div>
+                    <div class="stat-label">Balance due</div>
+                    <div @class(['stat-value', 'text-danger' => $owed > 0, 'text-success' => $owed <= 0])>{{ $currency }}{{ number_format($owed) }}</div>
+                </div>
+                <button type="button" wire:click="startCharge" class="btn-secondary">+ Add charge</button>
+            </section>
+
+            @if ($addingCharge)
+                <form wire:submit="saveCharge" class="card grid gap-3 p-4 sm:grid-cols-2 lg:p-6">
+                    <h2 class="section-title sm:col-span-2">New charge</h2>
+                    <div class="sm:col-span-2">
+                        <label for="chargePlanId" class="label">From fee plan <span class="text-muted">(optional)</span></label>
+                        <select wire:model.live="chargePlanId" id="chargePlanId" class="input">
+                            <option value="">Custom amount</option>
+                            @foreach ($feePlans as $plan)
+                                <option value="{{ $plan->id }}">{{ $plan->name }} · {{ $currency }}{{ number_format($plan->amount) }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label for="chargeLabel" class="label">For</label>
+                        <input wire:model="chargeLabel" id="chargeLabel" type="text" placeholder="e.g. Oct 2026, Workbook" class="input">
+                        @error('chargeLabel') <p class="error">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="chargeDue" class="label">Due on</label>
+                        <input wire:model="chargeDue" id="chargeDue" type="date" class="input">
+                        @error('chargeDue') <p class="error">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="chargeAmount" class="label">Amount ({{ $currency }})</label>
+                        <input wire:model="chargeAmount" id="chargeAmount" type="number" inputmode="decimal" step="0.01" class="input">
+                        @error('chargeAmount') <p class="error">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="chargeDiscount" class="label">Discount <span class="text-muted">(optional)</span></label>
+                        <input wire:model="chargeDiscount" id="chargeDiscount" type="number" inputmode="decimal" step="0.01" placeholder="e.g. sibling discount" class="input">
+                        @error('chargeDiscount') <p class="error">{{ $message }}</p> @enderror
+                    </div>
+                    <div class="flex gap-2 sm:col-span-2 sm:justify-end">
+                        <button type="button" wire:click="$set('addingCharge', false)" class="btn-secondary flex-1 sm:flex-none">Cancel</button>
+                        <button type="submit" class="btn-primary flex-1 sm:flex-none">Add charge</button>
+                    </div>
+                </form>
+            @endif
+
+            @if ($enrollments->isNotEmpty())
+                <section class="card p-4 lg:p-6">
+                    <h2 class="section-title">Fee plan per batch</h2>
+                    <div class="space-y-3">
+                        @foreach ($enrollments as $enrollment)
+                            <div wire:key="enr-{{ $enrollment->id }}" class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                <span class="text-ink">{{ $enrollment->batch->name }}</span>
+                                <select class="input sm:w-72" aria-label="Fee plan for {{ $enrollment->batch->name }}"
+                                        wire:change="setEnrollmentPlan({{ $enrollment->id }}, $event.target.value)">
+                                    <option value="">No fee plan</option>
+                                    @foreach ($feePlans as $plan)
+                                        <option value="{{ $plan->id }}" @selected($enrollment->fee_plan_id === $plan->id)>{{ $plan->name }} · {{ $currency }}{{ number_format($plan->amount) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endforeach
+                    </div>
+                    <p class="mt-3 text-xs text-muted">Monthly plans are billed automatically each month.</p>
+                </section>
+            @endif
+
+            <section>
+                <h2 class="section-title">Invoices</h2>
+                <div class="card divide-y divide-line">
+                    @forelse ($invoices as $invoice)
+                        @php($balance = $invoice->balance())
+                        <div wire:key="inv-{{ $invoice->id }}" class="p-4">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="min-w-0">
+                                    <div class="font-medium text-ink">{{ $invoice->period_label }}</div>
+                                    <div class="text-sm text-muted">
+                                        {{ $currency }}{{ number_format($invoice->amount) }}@if ((float) $invoice->discount > 0) − {{ $currency }}{{ number_format($invoice->discount) }} discount @endif
+                                        · due {{ $invoice->due_date->format('j M Y') }}
+                                    </div>
+                                </div>
+                                <span @class([
+                                    'shrink-0 rounded-full px-2 py-0.5 text-xs font-medium',
+                                    'bg-success-soft text-success' => $invoice->status->value === 'paid',
+                                    'bg-warning-soft text-warning' => $invoice->status->value === 'partial',
+                                    'bg-danger-soft text-danger' => $invoice->status->value === 'due',
+                                    'bg-surface-2 text-muted' => $invoice->status->value === 'waived',
+                                ])>{{ $invoice->status->label() }}</span>
+                            </div>
+                            @if ($invoice->payments->isNotEmpty())
+                                <ul class="mt-2 space-y-1 text-sm">
+                                    @foreach ($invoice->payments as $payment)
+                                        <li class="flex justify-between gap-2 text-muted">
+                                            <span>{{ $payment->paid_on->format('j M') }} · {{ $payment->method->label() }} · {{ $currency }}{{ number_format($payment->amount) }}</span>
+                                            <a href="{{ route('payments.receipt', $payment) }}" target="_blank" class="text-brand">{{ $payment->receipt_no }}</a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @endif
+                            @if ($balance > 0)
+                                <div class="mt-3 flex gap-2">
+                                    <button type="button" wire:click="startPayment({{ $invoice->id }})" class="btn-primary flex-1 sm:flex-none">Mark paid · {{ $currency }}{{ number_format($balance) }}</button>
+                                    <button type="button" wire:click="waive({{ $invoice->id }})" wire:confirm="Waive this charge? It will no longer show as due." class="btn-secondary">Waive</button>
+                                </div>
+                            @endif
+                        </div>
+                    @empty
+                        <div class="p-8 text-center text-muted">No invoices yet.</div>
+                    @endforelse
+                </div>
+            </section>
+        </div>
+    @endif
+
+    @include('partials.payment-sheet')
 </div>

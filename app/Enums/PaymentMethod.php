@@ -13,7 +13,7 @@ enum PaymentMethod: string
         return match ($this) {
             self::Cash => 'Cash',
             self::Upi => 'UPI',
-            self::Bank => 'Bank transfer',
+            self::Bank => 'Bank',
         };
     }
 }

@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Invoice extends Model
 {
-    protected $fillable = ['student_id', 'enrollment_id', 'period_label', 'due_date', 'amount', 'discount', 'status'];
+    protected $fillable = ['student_id', 'enrollment_id', 'period_label', 'period', 'due_date', 'amount', 'discount', 'status', 'notes'];
 
     protected function casts(): array
     {
@@ -42,8 +42,15 @@ class Invoice extends Model
         return $this->hasMany(Payment::class);
     }
 
+    /** Amount still owed; uses loaded payments when available to avoid extra queries. */
     public function balance(): float
     {
-        return (float) $this->amount - (float) $this->discount - (float) $this->payments()->sum('amount');
+        if ($this->status === InvoiceStatus::Waived) {
+            return 0;
+        }
+
+        $paid = $this->relationLoaded('payments') ? $this->payments->sum('amount') : $this->payments()->sum('amount');
+
+        return max(0, (float) $this->amount - (float) $this->discount - (float) $paid);
     }
 }
