@@ -8,6 +8,7 @@ use App\Enums\SkillStatus;
 use App\Livewire\Concerns\RecordsPayments;
 use App\Models\Course;
 use App\Models\FeePlan;
+use App\Models\Level;
 use App\Models\Setting;
 use App\Models\Skill;
 use App\Models\Student;
@@ -37,6 +38,15 @@ class Show extends Component
     public string $caption = '';
 
     public ?string $photoDate = null;
+
+    public ?int $assessingLevelId = null;
+
+    /** @var array<int, int|string> skill id => score 1–5 */
+    public array $scores = [];
+
+    public string $assessmentNote = '';
+
+    public ?string $assessmentDate = null;
 
     public bool $addingCharge = false;
 
@@ -104,6 +114,49 @@ class Show extends Component
     public function deletePhoto(int $sampleId): void
     {
         $this->student->samples()->findOrFail($sampleId)->delete();
+    }
+
+    public function startAssessment(int $levelId): void
+    {
+        $level = Level::with('skills')->findOrFail($levelId);
+
+        $this->resetValidation();
+        $this->assessingLevelId = $level->id;
+        $this->scores = $level->skills->mapWithKeys(fn ($skill) => [$skill->id => 3])->all();
+        $this->assessmentNote = '';
+        $this->assessmentDate = now()->toDateString();
+    }
+
+    public function saveAssessment(): void
+    {
+        $this->validate([
+            'scores' => 'required|array',
+            'scores.*' => 'required|integer|between:1,5',
+            'assessmentNote' => 'nullable|string|max:1000',
+            'assessmentDate' => 'required|date|before_or_equal:today',
+        ]);
+
+        $level = Level::with('skills')->findOrFail($this->assessingLevelId);
+        $skillIds = $level->skills->pluck('id')->all();
+
+        $assessment = $this->student->assessments()->create([
+            'level_id' => $level->id,
+            'date' => $this->assessmentDate,
+            'overall_note' => $this->assessmentNote ?: null,
+        ]);
+
+        foreach ($this->scores as $skillId => $score) {
+            if (in_array((int) $skillId, $skillIds, true)) {
+                $assessment->scores()->create(['skill_id' => $skillId, 'score' => $score]);
+            }
+        }
+
+        $this->assessingLevelId = null;
+    }
+
+    public function deleteAssessment(int $id): void
+    {
+        $this->student->assessments()->findOrFail($id)->delete();
     }
 
     public function setEnrollmentPlan(int $enrollmentId, ?int $planId): void
@@ -177,6 +230,11 @@ class Show extends Component
             'sessionCount' => $recent->count(),
             'courses' => Course::orderBy('name')->get(['id', 'name']),
             'course' => $this->tab === 'progress' && $this->courseId ? Course::with('levels.skills')->find($this->courseId) : null,
+            'assessments' => $this->tab === 'progress'
+                ? $this->student->assessments()->with(['level', 'scores.skill'])
+                    ->whereHas('level', fn ($q) => $q->where('course_id', $this->courseId))
+                    ->orderByDesc('date')->orderByDesc('id')->get()
+                : collect(),
             'samples' => $this->tab === 'samples' ? $this->student->samples()->orderByDesc('date')->orderByDesc('id')->get() : collect(),
             'enrollments' => $this->tab === 'fees' ? $this->student->enrollments()->where('status', 'active')->with('batch')->get() : collect(),
             'invoices' => $this->tab === 'fees' ? $this->student->invoices()->with('payments')->orderByDesc('due_date')->orderByDesc('id')->get() : collect(),
