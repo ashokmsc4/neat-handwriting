@@ -4,7 +4,7 @@ This guide assumes Hostinger **Premium or Business web hosting** (shared, hPanel
 
 ## One-time setup in hPanel
 
-1. **PHP version**: Advanced → PHP Configuration → choose **PHP 8.3**. Make sure the `pdo_mysql`, `mbstring`, `gd`, `fileinfo` and `zip` extensions are enabled.
+1. **PHP version**: Advanced → PHP Configuration → choose **PHP 8.3**. Make sure the `pdo_mysql`, `mbstring`, `gd`, `exif`, `fileinfo` and `zip` extensions are enabled. Under PHP options, set `upload_max_filesize` and `post_max_size` to at least **16M** so handwriting photos can be uploaded.
 2. **Database**: Databases → MySQL Databases → create a database and user. Note the database name, user and password (they look like `u123456789_neat`).
 3. **Subdomain**: Domains → Subdomains → create e.g. `app.yourdomain.com`. Hostinger creates a folder for it such as `~/domains/yourdomain.com/public_html/app`.
 4. **SSH**: Advanced → SSH Access → enable it and note the host, port (usually `65002`) and username.

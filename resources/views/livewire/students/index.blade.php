@@ -16,7 +16,7 @@
 
     <div class="card divide-y divide-line">
         @forelse ($students as $student)
-            <a href="{{ route('students.edit', $student) }}" wire:navigate wire:key="student-{{ $student->id }}" class="flex items-center gap-3 p-4 hover:bg-surface-2">
+            <a href="{{ route('students.show', $student) }}" wire:navigate wire:key="student-{{ $student->id }}" class="flex items-center gap-3 p-4 hover:bg-surface-2">
                 <div class="avatar">{{ mb_strtoupper(mb_substr($student->name, 0, 1)) }}</div>
                 <div class="min-w-0 flex-1">
                     <div class="truncate font-medium text-ink">{{ $student->name }}</div>

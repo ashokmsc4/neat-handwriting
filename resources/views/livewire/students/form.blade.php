@@ -1,6 +1,6 @@
 <div class="space-y-4">
     <header class="flex items-center gap-3">
-        <a href="{{ route('students.index') }}" wire:navigate class="btn-ghost" aria-label="Back to students">←</a>
+        <a href="{{ $student ? route('students.show', $student) : route('students.index') }}" wire:navigate class="btn-ghost" aria-label="Back">←</a>
         <h1 class="page-title">{{ $student ? $student->name : 'New student' }}</h1>
     </header>
 

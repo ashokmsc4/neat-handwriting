@@ -117,7 +117,7 @@ class Form extends Component
 
         session()->flash('status', 'Saved '.$this->name.'.');
 
-        return $this->redirectRoute('students.index', navigate: true);
+        return $this->redirectRoute('students.show', $this->student, navigate: true);
     }
 
     public function render()

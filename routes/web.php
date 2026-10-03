@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\SampleImageController;
 use App\Livewire\Attendance;
 use App\Livewire\Auth\Login;
 use App\Livewire\Batches;
@@ -19,7 +20,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/students', Students\Index::class)->name('students.index');
     Route::get('/students/new', Students\Form::class)->name('students.create');
+    Route::get('/students/{student}', Students\Show::class)->whereNumber('student')->name('students.show');
     Route::get('/students/{student}/edit', Students\Form::class)->name('students.edit');
+    Route::get('/samples/{sample}/image', SampleImageController::class)->name('samples.image');
 
     Route::get('/batches', Batches\Index::class)->name('batches.index');
     Route::get('/batches/new', Batches\Form::class)->name('batches.create');
