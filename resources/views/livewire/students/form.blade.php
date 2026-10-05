@@ -54,6 +54,34 @@
             </div>
         </section>
 
+        <section class="card space-y-3 p-4 lg:p-6">
+            <div class="flex items-baseline justify-between gap-3">
+                <h2 class="section-title mb-0">Batches</h2>
+                <span class="text-sm text-muted">{{ count($batch_ids) }} selected</span>
+            </div>
+
+            @if ($batches->isEmpty())
+                <p class="text-sm text-muted">No batches yet. <a href="{{ route('batches.create') }}" wire:navigate class="text-brand underline">Add a batch</a> first, or pick one later.</p>
+            @else
+                <div class="divide-y divide-line overflow-hidden rounded-xl border border-line">
+                    @foreach ($batches as $batch)
+                        <label wire:key="batch-{{ $batch->id }}" class="flex min-h-14 cursor-pointer items-center gap-3 px-3 py-2 hover:bg-surface-2">
+                            <input type="checkbox" wire:model.live="batch_ids" value="{{ $batch->id }}" class="h-5 w-5 shrink-0 rounded accent-brand">
+                            <span class="min-w-0 flex-1">
+                                <span class="block truncate font-medium text-ink">{{ $batch->name }}</span>
+                                <span class="line-clamp-2 block text-sm text-muted">
+                                    {{ $batch->course->name }}@foreach ($batch->schedules as $slot) · {{ $days[$slot->weekday] }} {{ \Illuminate\Support\Carbon::parse($slot->start_time)->format('g:i A') }}@endforeach
+                                </span>
+                            </span>
+                            <span class="shrink-0 text-sm text-muted">{{ $batch->students_count }}@if ($batch->capacity)/{{ $batch->capacity }}@endif</span>
+                        </label>
+                    @endforeach
+                </div>
+                <p class="text-xs text-muted">The student takes the batch's fee plan. A child can be in more than one batch, for example handwriting and phonics.</p>
+            @endif
+            @error('batch_ids.*') <p class="error">{{ $message }}</p> @enderror
+        </section>
+
         <section class="card grid gap-4 p-4 sm:grid-cols-2 lg:p-6">
             <h2 class="section-title sm:col-span-2">Parent</h2>
 

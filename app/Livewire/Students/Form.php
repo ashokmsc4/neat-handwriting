@@ -3,8 +3,11 @@
 namespace App\Livewire\Students;
 
 use App\Enums\StudentStatus;
+use App\Models\Batch;
+use App\Models\Enrollment;
 use App\Models\Guardian;
 use App\Models\Student;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Title;
@@ -37,6 +40,9 @@ class Form extends Component
 
     public string $guardian_email = '';
 
+    /** @var array<int, string> */
+    public array $batch_ids = [];
+
     public function mount(?Student $student = null): void
     {
         if (! $student?->exists) {
@@ -44,6 +50,9 @@ class Form extends Component
 
             return;
         }
+
+        $this->batch_ids = $student->enrollments()->where('status', 'active')
+            ->pluck('batch_id')->map(fn ($id) => (string) $id)->all();
 
         $this->student = $student;
         $this->fill([
@@ -75,6 +84,8 @@ class Form extends Component
             'guardian_phone' => 'required|string|max:20',
             'guardian_whatsapp' => 'nullable|string|max:20',
             'guardian_email' => 'nullable|email|max:255',
+            'batch_ids' => 'array',
+            'batch_ids.*' => 'integer|exists:batches,id',
         ];
     }
 
@@ -113,6 +124,8 @@ class Form extends Component
             $this->student
                 ? $this->student->update($studentData)
                 : $this->student = Student::create($studentData);
+
+            $this->syncBatches(array_map('intval', $data['batch_ids'] ?? []));
         });
 
         session()->flash('status', 'Saved '.$this->name.'.');
@@ -120,10 +133,40 @@ class Form extends Component
         return $this->redirectRoute('students.show', $this->student, navigate: true);
     }
 
+    /**
+     * Enroll the student in newly ticked batches and end enrollments for unticked ones,
+     * the same way the batch screen does.
+     */
+    private function syncBatches(array $batchIds): void
+    {
+        $today = Carbon::today();
+        $enrollments = $this->student->enrollments();
+        $current = (clone $enrollments)->where('status', 'active')->pluck('batch_id')->all();
+
+        (clone $enrollments)->where('status', 'active')
+            ->whereNotIn('batch_id', $batchIds)
+            ->update(['status' => 'ended', 'end_date' => $today]);
+
+        foreach (Batch::whereIn('id', array_diff($batchIds, $current))->get() as $batch) {
+            Enrollment::create([
+                'student_id' => $this->student->id,
+                'batch_id' => $batch->id,
+                'fee_plan_id' => $batch->fee_plan_id,
+                'start_date' => $today,
+                'status' => 'active',
+            ]);
+        }
+    }
+
     public function render()
     {
         return view('livewire.students.form', [
             'statuses' => StudentStatus::cases(),
+            // Stopped batches stay listed only if the student is still in them.
+            'batches' => Batch::with(['course', 'schedules'])->withCount('students')
+                ->where(fn ($q) => $q->where('active', true)->orWhereIn('id', $this->batch_ids))
+                ->orderBy('name')->get(),
+            'days' => ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
         ]);
     }
 }
