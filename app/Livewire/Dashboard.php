@@ -6,6 +6,7 @@ use App\Models\Attendance;
 use App\Models\Batch;
 use App\Models\Invoice;
 use App\Models\Payment;
+use App\Models\Registration;
 use App\Models\Student;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -46,6 +47,7 @@ class Dashboard extends Component
             'feesDue' => Invoice::outstanding()->with('payments')->get()->sum(fn ($invoice) => $invoice->balance()),
             'collected' => (float) Payment::where('paid_on', '>=', $monthStart)->sum('amount'),
             'birthdays' => $birthdays,
+            'newRegistrations' => Registration::pending()->count(),
             'currency' => config('school.currency'),
         ]);
     }

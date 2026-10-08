@@ -1,5 +1,8 @@
 @php
     $groups = [
+        'Parents' => [
+            ['registrations.index', 'Registration link', 'Share a form for parents to register their child'],
+        ],
         'Reports' => [
             ['reports.index', 'Reports & exports', 'Attendance, collections and CSV downloads'],
         ],

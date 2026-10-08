@@ -19,6 +19,7 @@ A web app for running handwriting and phonics classes: students and parents, bat
 - **Dashboard**: active students, attendance this month, fees outstanding and collected, birthdays this week
 - **Reports** (More → Reports): monthly attendance, collections chart, attendance by batch, CSV downloads of students, attendance, payments and outstanding fees
 - **Settings** (More): class name/phone/address (shown on receipts), fee due day, receipt prefix, courses/levels/skills editor, fee plans, account and password
+- **Parent registration link** (More → Registration link): a public form parents fill in from a WhatsApp link; new sign-ups show on Today and Students and become students with one tap. The link can be closed or replaced.
 - **Backups**: nightly zip of all data and photos (last 14 kept), a "Back up now" button and downloads in More → Backups
 - Responsive layout: bottom tab bar on phones and iPad portrait, sidebar on iPad landscape and desktop
 - Installable PWA with an offline page

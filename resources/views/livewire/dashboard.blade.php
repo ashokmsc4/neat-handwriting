@@ -4,6 +4,13 @@
         <h1 class="page-title">Good {{ $today->hour < 12 ? 'morning' : ($today->hour < 17 ? 'afternoon' : 'evening') }}, {{ strtok(auth()->user()->name, ' ') }}</h1>
     </header>
 
+    @if ($newRegistrations)
+        <a href="{{ route('registrations.index') }}" wire:navigate class="flex items-center justify-between gap-3 rounded-xl bg-brand-soft px-4 py-3 text-brand">
+            <span class="font-medium">{{ $newRegistrations }} new {{ Str::plural('registration', $newRegistrations) }} from parents</span>
+            <span aria-hidden="true">›</span>
+        </a>
+    @endif
+
     <section class="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <a href="{{ route('students.index') }}" wire:navigate class="card stat">
             <span class="stat-label">Active students</span>
