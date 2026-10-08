@@ -1,8 +1,18 @@
 <div class="space-y-4">
     <header class="flex items-center justify-between gap-3">
         <h1 class="page-title">Students</h1>
-        <a href="{{ route('students.create') }}" wire:navigate class="btn-primary">+ Add student</a>
+        <div class="flex gap-2">
+            <a href="{{ route('registrations.index') }}" wire:navigate class="btn-secondary">Registrations</a>
+            <a href="{{ route('students.create') }}" wire:navigate class="btn-primary">+ Add student</a>
+        </div>
     </header>
+
+    @if ($newRegistrations)
+        <a href="{{ route('registrations.index') }}" wire:navigate class="flex items-center justify-between gap-3 rounded-xl bg-brand-soft px-4 py-3 text-brand">
+            <span class="font-medium">{{ $newRegistrations }} new {{ Str::plural('registration', $newRegistrations) }} from parents</span>
+            <span aria-hidden="true">›</span>
+        </a>
+    @endif
 
     <div class="flex flex-col gap-2 sm:flex-row">
         <input wire:model.live.debounce.300ms="search" type="search" placeholder="Search by child, parent or phone" class="input flex-1">

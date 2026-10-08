@@ -3,6 +3,7 @@
 namespace App\Livewire\Students;
 
 use App\Enums\StudentStatus;
+use App\Models\Registration;
 use App\Models\Student;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -41,6 +42,7 @@ class Index extends Component
         return view('livewire.students.index', [
             'students' => $students,
             'statuses' => StudentStatus::cases(),
+            'newRegistrations' => Registration::pending()->count(),
         ]);
     }
 }

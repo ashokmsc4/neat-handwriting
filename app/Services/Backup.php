@@ -23,7 +23,7 @@ class Backup
         'users', 'guardians', 'students', 'courses', 'levels', 'skills', 'fee_plans',
         'batches', 'batch_schedules', 'enrollments', 'class_sessions', 'attendance',
         'student_skills', 'assessments', 'assessment_scores', 'samples',
-        'invoices', 'payments', 'settings', 'activity_log',
+        'invoices', 'payments', 'registrations', 'settings', 'activity_log',
     ];
 
     public function create(): string

@@ -10,6 +10,7 @@ use App\Livewire\Batches;
 use App\Livewire\Dashboard;
 use App\Livewire\Fees;
 use App\Livewire\More;
+use App\Livewire\Registrations;
 use App\Livewire\Reports;
 use App\Livewire\Settings;
 use App\Livewire\Students;
@@ -21,6 +22,9 @@ Route::middleware('guest')->group(function () {
     Route::get('/login', Login::class)->name('login');
 });
 
+// Public sign-up form parents open from the shared link.
+Route::get('/join/{token}', Registrations\Join::class)->middleware('throttle:60,1')->name('register');
+
 Route::middleware('auth')->group(function () {
     Route::get('/', Dashboard::class)->name('dashboard');
 
@@ -28,6 +32,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/students/new', Students\Form::class)->name('students.create');
     Route::get('/students/{student}', Students\Show::class)->whereNumber('student')->name('students.show');
     Route::get('/students/{student}/edit', Students\Form::class)->name('students.edit');
+    Route::get('/registrations', Registrations\Index::class)->name('registrations.index');
     Route::get('/samples/{sample}/image', SampleImageController::class)->name('samples.image');
 
     Route::get('/batches', Batches\Index::class)->name('batches.index');
